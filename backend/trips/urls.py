@@ -1,6 +1,6 @@
 
 from django.urls import path
-from .views import TripPlanView, TripDetailView
+from .views import TripPlanView, TripDetailView, LocationSearchView
 
 urlpatterns = [
     path('plan/', TripPlanView.as_view(), name='trip-plan'),
