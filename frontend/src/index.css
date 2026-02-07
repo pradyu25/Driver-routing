@@ -2,13 +2,83 @@
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-800 antialiased;
+    @apply bg-slate-50 text-slate-900 antialiased;
+    font-feature-settings: "ss01", "ss02", "cv01", "cv02";
   }
 }
 
 .leaflet-container {
   height: 100%;
   width: 100%;
-  border-radius: 0.5rem;
+  border-radius: 1rem;
   z-index: 0;
+}
+
+/* Custom Scrollbar for Logs */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-slate-400 rounded-full;
+  border: 2px solid #e2e8f0;
+}
+
+/* Hide scrollbar for select elements */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.mask-gradient-right {
+  mask-image: linear-gradient(to right, black 90%, transparent 100%);
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+/* Grid Line Fidelity */
+svg line {
+  shape-rendering: crispEdges;
+}
+
+/* Print Styles */
+@media print {
+
+  header,
+  .lg\:w-\[60%\],
+  button,
+  .day-selector {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+  }
+
+  .lg\:w-\[40%\] {
+    width: 100% !important;
+    overflow: visible !important;
+  }
 }

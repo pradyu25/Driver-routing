@@ -63,11 +63,11 @@ class ELDSimulator:
             remaining -= chunk
 
     def take_rest(self):
-        # 10h OFF
+        # 10h SB (Sleeper Berth is more realistic for over-the-road logs)
         # Record Stop Location (Current distance)
         self.stops.append({'type': 'REST', 'distance_miles': self.trip_dist})
         
-        self.add_log("OFF", 10.0)
+        self.add_log("SB", 10.0)
         self.driving_today = 0.0
         # New window starts when we come ON duty (which happens after rest)
         # Assuming we start immediately after rest
