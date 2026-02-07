@@ -66,15 +66,32 @@ A comprehensive logistics application for commercial drivers that automates rout
 
 ## Deployment
 
-The project is configured for Vercel.
+### Backend (Render)
+1. **Create a new Web Service** on Render.
+2. **Connect your GitHub repository**.
+3. **Set Root Directory** to `backend`.
+4. **Environment**: Select `Python`.
+5. **Build Command**: `./build.sh` (ensure it has executable permissions: `chmod +x build.sh`).
+6. **Start Command**: `gunicorn config.wsgi:application`.
+7. **Add Environment Variables**:
+   - `SECRET_KEY`: A secure random string.
+   - `DEBUG`: `False`.
+   - `DATABASE_URL`: Your PostgreSQL connection string (internal/external).
+   - `MAP_API_KEY`: Your OpenRouteService API Key.
+   - `ALLOWED_HOSTS`: Your Render app URL (e.g., `yourapp.onrender.com`).
+   - `CORS_ALLOWED_ORIGINS`: Your Vercel frontend URL (e.g., `https://frontend-app.vercel.app`).
+   - `CSRF_TRUSTED_ORIGINS`: Your Vercel frontend URL.
 
-1. Install Vercel CLI or connect GitHub repo to Vercel.
-2. Ensure `vercel.json` is at root.
-3. Set Environment Variables in Vercel:
-   - `SECRET_KEY`
-   - `MAP_API_KEY`
-   - `DATABASE_URL` (Optional, defaults to SQLite which is ephemeral on Serverless)
-   - `VITE_API_URL` (Set to `/api` or full URL)
+### Frontend (Vercel)
+1. **Create a new Project** on Vercel.
+2. **Connect your GitHub repository**.
+3. **Set Root Directory** to `frontend`.
+4. **Build Settings**: Vercel should auto-detect Vite.
+   - Build Command: `npm run build`
+   - Output Directory: `dist`
+5. **Add Environment Variables**:
+   - `VITE_API_URL`: Your Render backend URL + `/api` (e.g., `https://yourapp.onrender.com/api`).
+
 
 ## Architecture
 
