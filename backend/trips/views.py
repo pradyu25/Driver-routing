@@ -61,7 +61,10 @@ class TripPlanView(APIView):
                     data['dropoff_location']
                 )
             except Exception as e:
-                return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+                print(f"TRIP PLAN FATAL ERROR: {e}")
+                import traceback
+                traceback.print_exc()
+                return Response({'error': f"Internal Calculation Error: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
             # 2. ELD Logic
             eld_result = generate_eld_logs(
@@ -105,7 +108,9 @@ class TripPlanView(APIView):
             )
             
             return Response(TripSerializer(trip).data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        print(f"SERIALIZER VALIDATION FAIL: {serializer.errors}")
+        return Response({'error': 'Validation Failed', 'details': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 class TripDetailView(APIView):
     def get(self, request, pk):
