@@ -16,6 +16,9 @@ class LocationSearchView(APIView):
             return Response([])
             
         api_key = settings.MAP_API_KEY
+        if not api_key or "YOUR" in api_key:
+            return Response({'error': 'MAP_API_KEY not configured on server'}, status=status.HTTP_400_BAD_REQUEST)
+
         url = "https://api.openrouteservice.org/geocode/autocomplete"
         params = {
             "api_key": api_key,
@@ -25,7 +28,14 @@ class LocationSearchView(APIView):
         
         try:
             response = requests.get(url, params=params, timeout=5)
-            response.raise_for_status()
+            if response.status_code != 200:
+                # Return the actual error from ORS to help debug
+                try:
+                    error_detail = response.json()
+                except:
+                    error_detail = response.text
+                return Response({'error': f'Routing API error: {error_detail}'}, status=response.status_code)
+                
             data = response.json()
             suggestions = []
             for feature in data.get('features', []):
@@ -35,7 +45,7 @@ class LocationSearchView(APIView):
                 })
             return Response(suggestions)
         except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'error': f'Geocoding request failed: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class TripPlanView(APIView):
     def post(self, request):

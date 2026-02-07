@@ -10,9 +10,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-default-dev-key')
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
+ALLOWED_HOSTS = [h.strip() for h in os.environ.get('ALLOWED_HOSTS', '*').split(',') if h.strip()]
+if not ALLOWED_HOSTS:
+    ALLOWED_HOSTS = ['*']
 
-MAP_API_KEY = os.environ.get('MAP_API_KEY')
+MAP_API_KEY = os.environ.get('MAP_API_KEY', '').strip()
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
