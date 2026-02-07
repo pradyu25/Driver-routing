@@ -85,9 +85,14 @@ const Results = () => {
                             ELD COMPLIANT
                         </span>
                     </div>
-                    <button className="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all shadow-md">
-                        Export Report
+                    <button
+                        onClick={() => window.print()}
+                        className="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all shadow-md flex items-center"
+                    >
+                        <ListChecks className="w-4 h-4 mr-2" />
+                        Print Logs
                     </button>
+
                 </div>
             </header>
 
@@ -134,8 +139,8 @@ const Results = () => {
                                 key={dayLog.day}
                                 onClick={() => setActiveDay(dayLog.day)}
                                 className={`shrink-0 px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest transition-all ${activeDay === dayLog.day
-                                        ? 'bg-slate-900 text-white shadow-lg'
-                                        : 'bg-white text-slate-500 hover:bg-slate-300 shadow-sm border border-slate-300/50'
+                                    ? 'bg-slate-900 text-white shadow-lg'
+                                    : 'bg-white text-slate-500 hover:bg-slate-300 shadow-sm border border-slate-300/50'
                                     }`}
                             >
                                 Day {dayLog.day}

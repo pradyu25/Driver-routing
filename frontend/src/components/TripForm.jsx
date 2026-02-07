@@ -4,6 +4,34 @@ import { useNavigate } from 'react-router-dom';
 import { planTrip } from '../api/api.js';
 import { Loader2, Navigation, Truck, ClipboardList, TrendingUp, MapPin } from 'lucide-react';
 
+const InputField = ({ label, value, onChange, placeholder, icon: Icon, type = "text", subLabel }) => (
+    <div className="space-y-2">
+        <label className="flex items-center text-sm font-semibold text-slate-700 ml-1">
+            {Icon && <Icon className="w-4 h-4 mr-2 text-slate-400" />}
+            {label}
+        </label>
+        <div className="relative group/input">
+            <input
+                type={type}
+                step={type === "number" ? "0.1" : undefined}
+                min={type === "number" ? "0" : undefined}
+                max={type === "number" ? "70" : undefined}
+                className="w-full pl-11 pr-4 py-4 rounded-2xl border-2 border-slate-100 bg-slate-50/50 backdrop-blur-sm text-lg font-black text-slate-900 placeholder:text-slate-400 placeholder:font-medium focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 transition-all duration-300 shadow-sm"
+                placeholder={placeholder}
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                required
+            />
+            {Icon && <Icon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within/input:text-brand-500 transition-colors" />}
+            {subLabel && (
+                <div className="absolute right-6 top-1/2 -translate-y-1/2 px-3 py-1 bg-slate-200 rounded-lg text-[10px] font-black text-slate-500 tracking-tighter">
+                    {subLabel}
+                </div>
+            )}
+        </div>
+    </div>
+);
+
 const TripForm = () => {
     const [formData, setFormData] = useState({
         start_location: '',
@@ -29,34 +57,6 @@ const TripForm = () => {
             setLoading(false);
         }
     };
-
-    const InputField = ({ label, value, onChange, placeholder, icon: Icon, type = "text", subLabel }) => (
-        <div className="space-y-2">
-            <label className="flex items-center text-sm font-semibold text-slate-700 ml-1">
-                {Icon && <Icon className="w-4 h-4 mr-2 text-slate-400" />}
-                {label}
-            </label>
-            <div className="relative group/input">
-                <input
-                    type={type}
-                    step={type === "number" ? "0.1" : undefined}
-                    min={type === "number" ? "0" : undefined}
-                    max={type === "number" ? "70" : undefined}
-                    className="w-full pl-11 pr-4 py-4 rounded-2xl border-2 border-slate-100 bg-slate-50/50 backdrop-blur-sm text-lg font-black text-slate-900 placeholder:text-slate-400 placeholder:font-medium focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 transition-all duration-300 shadow-sm"
-                    placeholder={placeholder}
-                    value={value}
-                    onChange={(e) => onChange(e.target.value)}
-                    required
-                />
-                {Icon && <Icon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within/input:text-brand-500 transition-colors" />}
-                {subLabel && (
-                    <div className="absolute right-6 top-1/2 -translate-y-1/2 px-3 py-1 bg-slate-200 rounded-lg text-[10px] font-black text-slate-500 tracking-tighter">
-                        {subLabel}
-                    </div>
-                )}
-            </div>
-        </div>
-    );
 
     return (
         <div className="max-w-4xl mx-auto relative group">

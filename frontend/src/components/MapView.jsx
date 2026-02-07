@@ -62,7 +62,8 @@ const MapView = ({ routeGeometry, markers }) => {
     const positions = coordinates.map(c => [c[1], c[0]]); // Swap for Leaflet
 
     return (
-        <div className="h-[400px] w-full rounded-lg overflow-hidden border border-gray-300 shadow-sm relative z-0">
+        <div className="h-full w-full rounded-lg overflow-hidden border border-gray-300 shadow-sm relative z-0">
+
             <MapContainer center={[37.0902, -95.7129]} zoom={4} style={{ height: '100%', width: '100%' }}>
                 <TileLayer
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
