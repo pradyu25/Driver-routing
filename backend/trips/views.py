@@ -1,4 +1,5 @@
-
+import requests
+from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -7,6 +8,34 @@ from .models import Trip
 from .serializers import TripSerializer, TripPlanSerializer
 from .services.routing import get_route, interpolate_along_route
 from .services.eld_engine import generate_eld_logs
+
+class LocationSearchView(APIView):
+    def get(self, request):
+        query = request.query_params.get('q', '')
+        if not query:
+            return Response([])
+            
+        api_key = settings.MAP_API_KEY
+        url = "https://api.openrouteservice.org/geocode/autocomplete"
+        params = {
+            "api_key": api_key,
+            "text": query,
+            "size": 5
+        }
+        
+        try:
+            response = requests.get(url, params=params, timeout=5)
+            response.raise_for_status()
+            data = response.json()
+            suggestions = []
+            for feature in data.get('features', []):
+                suggestions.append({
+                    'label': feature['properties'].get('label', ''),
+                    'coords': feature['geometry'].get('coordinates', [])
+                })
+            return Response(suggestions)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class TripPlanView(APIView):
     def post(self, request):

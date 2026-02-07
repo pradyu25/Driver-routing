@@ -7,13 +7,9 @@ import Results from './pages/Results';
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-slate-50 font-sans">
+      <div className="min-h-screen">
         <Routes>
-          <Route path="/" element={
-            <div className="container mx-auto">
-              <Home />
-            </div>
-          } />
+          <Route path="/" element={<Home />} />
           <Route path="/results/:id" element={<Results />} />
         </Routes>
       </div>

@@ -2,7 +2,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { planTrip } from '../api/api.js';
-import { Loader2, MapPin, Navigation, Truck, ClipboardList } from 'lucide-react';
+import LocationAutocomplete from './LocationAutocomplete';
+import { Loader2, Navigation, Truck, ClipboardList, TrendingUp } from 'lucide-react';
 
 const TripForm = () => {
     const [formData, setFormData] = useState({
@@ -30,108 +31,116 @@ const TripForm = () => {
         }
     };
 
-    const inputClasses = "mt-1 block w-full rounded-lg border-slate-200 bg-slate-50 shadow-sm focus:border-brand-500 focus:ring-brand-500 p-3 border transition-all duration-200 hover:border-slate-300";
-    const labelClasses = "flex items-center text-sm font-semibold text-slate-700 mb-1";
-
     return (
-        <div className="max-w-2xl mx-auto bg-white p-10 rounded-2xl shadow-xl border border-slate-100">
-            <div className="flex items-center space-x-3 mb-8">
-                <div className="p-3 bg-brand-50 rounded-xl">
-                    <Truck className="w-8 h-8 text-brand-600" />
-                </div>
-                <div>
-                    <h2 className="text-3xl font-black text-slate-900 tracking-tight">Trip Planner</h2>
-                    <p className="text-slate-500 font-medium">Generate FMCSA compliant route and logs</p>
-                </div>
-            </div>
+        <div className="max-w-4xl mx-auto relative group">
+            {/* Glow Decorative Elements */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-brand-600 to-indigo-600 rounded-[2.5rem] blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
 
-            {error && (
-                <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-r-lg mb-6 text-sm flex items-start">
-                    <span className="font-bold mr-2">Error:</span> {error}
-                </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="md:col-span-2">
-                        <label className={labelClasses}>
-                            <Navigation className="w-4 h-4 mr-2 text-slate-400" /> Current Location
-                        </label>
-                        <input
-                            type="text"
-                            required
-                            className={inputClasses}
-                            placeholder="Address or City, State"
-                            value={formData.start_location}
-                            onChange={(e) => setFormData({ ...formData, start_location: e.target.value })}
-                        />
+            <div className="relative bg-white/80 backdrop-blur-2xl p-8 md:p-12 rounded-[2rem] shadow-2xl border border-white/50 overflow-hidden">
+                {/* Header Section */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+                    <div className="flex items-center space-x-5">
+                        <div className="p-4 bg-brand-600 rounded-2xl shadow-lg shadow-brand-500/40 transform -rotate-3 hover:rotate-0 transition-transform duration-300">
+                            <Truck className="w-10 h-10 text-white" />
+                        </div>
+                        <div>
+                            <h2 className="text-4xl font-black text-slate-900 tracking-tighter leading-none">
+                                Intelligence <span className="text-brand-600">Scheduler</span>
+                            </h2>
+                            <p className="text-slate-500 font-bold uppercase text-[10px] tracking-widest mt-2 border-l-2 border-brand-200 pl-3">
+                                Autonomous Logistics Framework
+                            </p>
+                        </div>
                     </div>
+                </div>
 
-                    <div>
-                        <label className={labelClasses}>
-                            <MapPin className="w-4 h-4 mr-2 text-brand-500" /> Pickup Point
-                        </label>
-                        <input
-                            type="text"
-                            required
-                            className={inputClasses}
-                            placeholder="Company Name, Address"
-                            value={formData.pickup_location}
-                            onChange={(e) => setFormData({ ...formData, pickup_location: e.target.value })}
-                        />
+                {error && (
+                    <div className="bg-red-50/50 backdrop-blur border-l-4 border-red-500 text-red-900 p-5 rounded-r-3xl mb-8 animate-in slide-in-from-left-2 duration-300">
+                        <p className="text-xs font-black uppercase tracking-wider mb-1">Configuration Error</p>
+                        <p className="font-semibold text-sm">{error}</p>
                     </div>
+                )}
 
-                    <div>
-                        <label className={labelClasses}>
-                            <MapPin className="w-4 h-4 mr-2 text-red-500" /> Drop-off Point
-                        </label>
-                        <input
-                            type="text"
-                            required
-                            className={inputClasses}
-                            placeholder="Destination Address"
-                            value={formData.dropoff_location}
-                            onChange={(e) => setFormData({ ...formData, dropoff_location: e.target.value })}
-                        />
-                    </div>
-
-                    <div className="md:col-span-2">
-                        <label className={labelClasses}>
-                            <ClipboardList className="w-4 h-4 mr-2 text-slate-400" /> Current Cycle Used (Hours)
-                        </label>
-                        <div className="relative">
-                            <input
-                                type="number"
-                                step="0.1"
-                                min="0"
-                                max="70"
-                                className={inputClasses}
-                                value={formData.current_cycle_used}
-                                onChange={(e) => setFormData({ ...formData, current_cycle_used: parseFloat(e.target.value) })}
+                <form onSubmit={handleSubmit} className="space-y-10">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
+                        {/* Autocomplete Fields */}
+                        <div className="md:col-span-2">
+                            <LocationAutocomplete
+                                label="Fleet Origin"
+                                placeholder="Starting terminal location..."
+                                value={formData.start_location}
+                                onChange={(val) => setFormData({ ...formData, start_location: val })}
+                                icon={Navigation}
                             />
-                            <div className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">/ 70 HRS</div>
+                        </div>
+
+                        <LocationAutocomplete
+                            label="Pickup Point"
+                            placeholder="Facility or city..."
+                            value={formData.pickup_location}
+                            onChange={(val) => setFormData({ ...formData, pickup_location: val })}
+                        />
+
+                        <LocationAutocomplete
+                            label="Final Distribution"
+                            placeholder="Delivery destination..."
+                            value={formData.dropoff_location}
+                            onChange={(val) => setFormData({ ...formData, dropoff_location: val })}
+                        />
+
+                        {/* Numeric Field with Styled Input */}
+                        <div className="md:col-span-2 space-y-2">
+                            <label className="flex items-center text-sm font-semibold text-slate-700 ml-1">
+                                <ClipboardList className="w-4 h-4 mr-2 text-slate-400" />
+                                Current Cycle Consumption
+                            </label>
+                            <div className="relative group/input">
+                                <input
+                                    type="number"
+                                    step="0.1"
+                                    min="0"
+                                    max="70"
+                                    className="w-full pl-11 pr-4 py-4 rounded-2xl border-2 border-slate-100 bg-slate-50/50 backdrop-blur-sm text-lg font-black text-slate-900 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 transition-all duration-300"
+                                    value={formData.current_cycle_used}
+                                    onChange={(e) => setFormData({ ...formData, current_cycle_used: parseFloat(e.target.value) || 0 })}
+                                />
+                                <TrendingUp className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within/input:text-brand-500 transition-colors" />
+                                <div className="absolute right-6 top-1/2 -translate-y-1/2 px-3 py-1 bg-slate-200 rounded-lg text-[10px] font-black text-slate-500 tracking-tighter">
+                                    / 70 HOURS USED
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full h-14 mt-4 flex items-center justify-center rounded-xl bg-brand-600 hover:bg-brand-700 active:bg-brand-800 text-white text-lg font-bold shadow-lg shadow-brand-500/30 transition-all duration-300 transform active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed group"
-                >
-                    {loading ? (
-                        <div className="flex items-center">
-                            <Loader2 className="animate-spin h-6 w-6 mr-3" />
-                            <span>Calculating Route & Logs...</span>
-                        </div>
-                    ) : (
-                        <div className="flex items-center">
-                            <span>Plan Compliant Trip</span>
-                            <Navigation className="w-5 h-5 ml-2 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                        </div>
-                    )}
-                </button>
-            </form>
+                    {/* Primary Button */}
+                    <div className="pt-4">
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="relative w-full h-20 overflow-hidden rounded-3xl group/btn disabled:opacity-70 disabled:cursor-not-allowed"
+                        >
+                            {/* Animated Gradient Background */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-brand-600 via-indigo-600 to-brand-700 bg-[length:200%_100%] animate-gradient group-hover/btn:animate-none transition-all duration-500"></div>
+
+                            <div className="relative flex items-center justify-center h-full px-8 text-white">
+                                {loading ? (
+                                    <div className="flex items-center space-x-4">
+                                        <Loader2 className="animate-spin h-8 w-8" />
+                                        <span className="text-xl font-black uppercase tracking-widest">Compiling Simulation...</span>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center space-x-4">
+                                        <span className="text-2xl font-black uppercase tracking-wider">Initialize Routing</span>
+                                        <div className="p-2 bg-white/20 rounded-xl backdrop-blur group-hover/btn:bg-white/30 transition-colors">
+                                            <Navigation className="w-6 h-6 transform group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 };
