@@ -112,12 +112,7 @@ class TripPlanView(APIView):
             )
             
             return Response(TripSerializer(trip).data, status=status.HTTP_201_CREATED)
-<<<<<<< HEAD
-        print(f"SERIALIZER ERRORS: {serializer.errors}")
-=======
-        
         print(f"SERIALIZER VALIDATION FAIL: {serializer.errors}")
->>>>>>> 36f6ab5707ebeb9a42869c160121836425122e34
         return Response({'error': 'Validation Failed', 'details': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 class TripDetailView(APIView):
