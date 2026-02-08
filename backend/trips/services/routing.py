@@ -105,11 +105,15 @@ def get_route(start_addr, pickup_addr, dropoff_addr):
     }
     
     try:
-        if not api_key or "YOUR" in api_key:
-            raise ValueError("No API Key")
+        if not api_key:
+            raise ValueError("MAP_API_KEY is not configured on the server")
             
         response = requests.post(url, json=body, headers=headers, timeout=10)
-        response.raise_for_status()
+        
+        if response.status_code != 200:
+            error_data = response.json() if response.headers.get('Content-Type') == 'application/json' else response.text
+            print(f"ORS API ERROR: {response.status_code} - {error_data}")
+            raise Exception(f"Routing API error: {error_data}")
         data = response.json()
         
         feature = data['features'][0]

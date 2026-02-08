@@ -9,7 +9,11 @@ from .services.routing import get_route, interpolate_along_route
 from .services.eld_engine import generate_eld_logs
 
 class TripPlanView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
     def post(self, request):
+        print(f"TRIP PLAN REQUEST: {request.data}")
         serializer = TripPlanSerializer(data=request.data)
         if serializer.is_valid():
             data = serializer.validated_data
@@ -66,9 +70,13 @@ class TripPlanView(APIView):
             )
             
             return Response(TripSerializer(trip).data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        print(f"SERIALIZER ERRORS: {serializer.errors}")
+        return Response({'error': 'Validation Failed', 'details': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 class TripDetailView(APIView):
+    authentication_classes = []
+    permission_classes = []
+    
     def get(self, request, pk):
         trip = get_object_or_404(Trip, pk=pk)
         return Response(TripSerializer(trip).data)
