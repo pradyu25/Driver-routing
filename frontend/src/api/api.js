@@ -21,4 +21,9 @@ export const getTrip = async (id) => {
     return response.data;
 };
 
+export const searchLocations = async (query) => {
+    const response = await api.get(`/trips/search/?q=${encodeURIComponent(query)}`);
+    return response.data;
+};
+
 export default api;

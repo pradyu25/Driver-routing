@@ -1,4 +1,5 @@
-
+import requests
+from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -7,6 +8,44 @@ from .models import Trip
 from .serializers import TripSerializer, TripPlanSerializer
 from .services.routing import get_route, interpolate_along_route
 from .services.eld_engine import generate_eld_logs
+
+class LocationSearchView(APIView):
+    def get(self, request):
+        query = request.query_params.get('q', '')
+        if not query:
+            return Response([])
+            
+        api_key = settings.MAP_API_KEY
+        if not api_key or "YOUR" in api_key:
+            return Response({'error': 'MAP_API_KEY not configured on server'}, status=status.HTTP_400_BAD_REQUEST)
+
+        url = "https://api.openrouteservice.org/geocode/autocomplete"
+        params = {
+            "api_key": api_key,
+            "text": query,
+            "size": 5
+        }
+        
+        try:
+            response = requests.get(url, params=params, timeout=5)
+            if response.status_code != 200:
+                # Return the actual error from ORS to help debug
+                try:
+                    error_detail = response.json()
+                except:
+                    error_detail = response.text
+                return Response({'error': f'Routing API error: {error_detail}'}, status=response.status_code)
+                
+            data = response.json()
+            suggestions = []
+            for feature in data.get('features', []):
+                suggestions.append({
+                    'label': feature['properties'].get('label', ''),
+                    'coords': feature['geometry'].get('coordinates', [])
+                })
+            return Response(suggestions)
+        except Exception as e:
+            return Response({'error': f'Geocoding request failed: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class TripPlanView(APIView):
     authentication_classes = []
@@ -26,7 +65,10 @@ class TripPlanView(APIView):
                     data['dropoff_location']
                 )
             except Exception as e:
-                return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+                print(f"TRIP PLAN FATAL ERROR: {e}")
+                import traceback
+                traceback.print_exc()
+                return Response({'error': f"Internal Calculation Error: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
             # 2. ELD Logic
             eld_result = generate_eld_logs(
@@ -70,7 +112,12 @@ class TripPlanView(APIView):
             )
             
             return Response(TripSerializer(trip).data, status=status.HTTP_201_CREATED)
+<<<<<<< HEAD
         print(f"SERIALIZER ERRORS: {serializer.errors}")
+=======
+        
+        print(f"SERIALIZER VALIDATION FAIL: {serializer.errors}")
+>>>>>>> 36f6ab5707ebeb9a42869c160121836425122e34
         return Response({'error': 'Validation Failed', 'details': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 class TripDetailView(APIView):

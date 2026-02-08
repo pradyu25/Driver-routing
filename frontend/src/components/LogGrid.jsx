@@ -1,102 +1,154 @@
 
 import React from 'react';
 
-const STATUS_Y = {
-    'OFF': 20,
-    'SB': 50, // Sleeper Berth
-    'DRIVING': 80,
-    'ON': 110
-};
-
-const STATUS_LABELS = {
-    'OFF': 'OFF DUTY',
-    'SB': 'SLEEPER',
-    'DRIVING': 'DRIVING',
-    'ON': 'ON DUTY'
-};
-
-const LogGrid = ({ logs, date }) => {
-    // logs: [{status, start, end}, ...]
-    // Width 800px. Height 150px.
-    // X scale = 800 / 24
+const PaperLogGrid = ({ logs }) => {
+    // FMCSA Style Log Grid
+    // 24 Hour horizontal timeline
+    // Rows: OFF DUTY, SLEEPER BERTH, DRIVING, ON DUTY
 
     const width = 800;
-    const height = 150;
+    const height = 160;
+    const rowHeight = 40;
     const hourWidth = width / 24;
+    const margin = { top: 20, right: 30, bottom: 20, left: 100 };
 
-    // Draw Grid Lines
-    const gridLines = [];
-    for (let i = 0; i <= 24; i++) {
-        gridLines.push(
-            <line key={`grid-${i}`} x1={i * hourWidth} y1={0} x2={i * hourWidth} y2={height} stroke="#e5e7eb" strokeWidth="1" />
-        );
-        // Hour Label
-        if (i < 24) {
-            gridLines.push(
-                <text key={`label-${i}`} x={i * hourWidth + 2} y={height - 5} fontSize="10" fill="#9ca3af">{i}</text>
-            );
-        }
-    }
+    const svgWidth = width + margin.left + margin.right;
+    const svgHeight = height + margin.top + margin.bottom;
 
-    // Draw Status Lines
-    const statusLines = Object.entries(STATUS_Y).map(([status, y]) => (
-        <g key={status}>
-            <line x1={0} y1={y} x2={width} y2={y} stroke="#e5e7eb" strokeWidth="1" strokeDasharray="4 4" />
-            <text x={-60} y={y + 4} fontSize="10" fill="#6b7280" textAnchor="end">{STATUS_LABELS[status]}</text>
-        </g>
-    ));
+    const STATUS_ROWS = [
+        { id: 'OFF', label: '1. OFF DUTY', y: 0 },
+        { id: 'SB', label: '2. SLEEPER BERTH', y: rowHeight },
+        { id: 'DRIVING', label: '3. DRIVING', y: rowHeight * 2 },
+        { id: 'ON', label: '4. ON DUTY (Not Driving)', y: rowHeight * 3 },
+    ];
 
-    // Draw Log Path
+    // Helper to get Y for a status
+    const getY = (status) => {
+        const row = STATUS_ROWS.find(r => r.id === status) || STATUS_ROWS[0];
+        return row.y + (rowHeight / 2);
+    };
+
+    // Normalize incoming status names
+    const normalizeStatus = (status) => {
+        if (status === 'SLEEPER' || status === 'SB') return 'SB';
+        if (status === 'ON-DUTY' || status === 'ON') return 'ON';
+        if (status === 'DRIVING') return 'DRIVING';
+        return 'OFF';
+    };
+
+    // Generate Path
     let pathCmd = "";
-
-    // We need to map logs to a continuous line.
-    // (startX, startY) -> (endX, endY)
-    // If next status changes, vertical line to next Y.
-
     if (logs && logs.length > 0) {
-        // Sort logs by start
-        logs.sort((a, b) => a.start - b.start);
+        const sortedLogs = [...logs].sort((a, b) => a.start - b.start);
 
-        const first = logs[0];
-        let currentX = first.start * hourWidth;
-        let currentY = STATUS_Y[first.status === 'SLEEPER' ? 'SB' : (first.status === 'ON' ? 'ON' : first.status)];
-        // Normalize status names: 'SLEEPER' -> 'SB', 'ON-DUTY' -> 'ON'?
-        // API returns: OFF, ON, DRIVING. Sleeper is usually separate but my ELD engine generates OFF/ON/DRIVING.
-        // If my engine doesn't generate SB, just use OFF/ON/DRIVING.
-
-        pathCmd += `M ${currentX} ${currentY}`;
-
-        logs.forEach((log, index) => {
+        sortedLogs.forEach((log, i) => {
+            const status = normalizeStatus(log.status);
             const startX = log.start * hourWidth;
             const endX = log.end * hourWidth;
-            const statusKey = log.status === 'SLEEPER' ? 'SB' : (log.status === 'ON' ? 'ON' : (log.status === 'DRIVING' ? 'DRIVING' : 'OFF'));
-            const y = STATUS_Y[statusKey] || STATUS_Y['OFF'];
+            const y = getY(status);
 
-            // If startX != currentX (gap?), move? No, assume contiguous.
-            // If new status (y != currentY), vertical line drawn implicitly by L command.
-
-            // Horizontal line for duration
-            pathCmd += ` L ${startX} ${y}`; // Vertical segment if Y changed
-            pathCmd += ` L ${endX} ${y}`;   // Horizontal segment
-
-            currentX = endX;
-            currentY = y;
+            if (i === 0) {
+                pathCmd += `M ${startX} ${y}`;
+            } else {
+                // Vertical line from previous Y to current Y
+                pathCmd += ` L ${startX} ${y}`;
+            }
+            // Horizontal line across duration
+            pathCmd += ` L ${endX} ${y}`;
         });
     }
 
+    // Grid Helpers
+    const hours = Array.from({ length: 25 }, (_, i) => i);
+    const fifteenMinTicks = Array.from({ length: 24 * 4 }, (_, i) => i);
+
     return (
-        <div className="overflow-x-auto p-4 bg-white rounded shadow mb-4">
-            <h3 className="text-lg font-bold mb-2">Driver's Daily Log - {date}</h3>
-            <svg width={width + 80} height={height + 20} viewBox={`-70 -10 ${width + 80} ${height + 20}`}>
-                {gridLines}
-                {statusLines}
-                <path d={pathCmd} fill="none" stroke="#2563eb" strokeWidth="2" />
+        <div className="bg-white border-x-2 border-slate-900 group">
+            <svg
+                viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+                className="w-full h-auto select-none"
+                preserveAspectRatio="xMidYMid meet"
+            >
+                {/* Background */}
+                <rect x={margin.left} y={margin.top} width={width} height={height} fill="white" />
+
+                {/* Grid Lines */}
+                <g transform={`translate(${margin.left}, ${margin.top})`}>
+                    {/* Horizontal Borders */}
+                    {Array.from({ length: 5 }).map((_, i) => (
+                        <line
+                            key={`h-${i}`}
+                            x1={0} y1={i * rowHeight}
+                            x2={width} y2={i * rowHeight}
+                            stroke="black" strokeWidth={i === 0 || i === 4 ? 2 : 1}
+                        />
+                    ))}
+
+                    {/* Vertical Lines & Ticks */}
+                    {fifteenMinTicks.map(t => {
+                        const x = t * (hourWidth / 4);
+                        const isHour = t % 4 === 0;
+                        const isHalf = t % 4 === 2;
+                        return (
+                            <line
+                                key={`tick-${t}`}
+                                x1={x} y1={0} x2={x} y2={height}
+                                stroke="black"
+                                strokeWidth={isHour ? 1 : 0.5}
+                                opacity={isHour ? 0.3 : 0.1}
+                            />
+                        );
+                    })}
+
+                    {/* Labels & Major Hour Lines */}
+                    {hours.map(h => {
+                        const x = h * hourWidth;
+                        return (
+                            <g key={`hour-${h}`}>
+                                <line
+                                    x1={x} y1={-5} x2={x} y2={height + 5}
+                                    stroke="black" strokeWidth={h % 12 === 0 ? 2 : 1}
+                                />
+                                {h < 24 && (
+                                    <text
+                                        x={x + 2} y={-8}
+                                        fontSize="10" fontWeight="bold"
+                                        fontFamily="monospace"
+                                    >
+                                        {h === 0 ? 'MDT' : h === 12 ? 'NOON' : h}
+                                    </text>
+                                )}
+                            </g>
+                        );
+                    })}
+
+                    {/* Status Labels (Left Column) */}
+                    {STATUS_ROWS.map(row => (
+                        <text
+                            key={row.id}
+                            x={-5} y={row.y + (rowHeight / 2) + 4}
+                            textAnchor="end"
+                            fontSize="10"
+                            fontWeight="bold"
+                            className="fill-slate-900"
+                        >
+                            {row.label}
+                        </text>
+                    ))}
+
+                    {/* The Path */}
+                    <path
+                        d={pathCmd}
+                        fill="none"
+                        stroke="#000" // Traditional black ink style
+                        strokeWidth="2.5"
+                        strokeLinejoin="round"
+                        strokeLinecap="square"
+                    />
+                </g>
             </svg>
-            <div className="mt-2 text-sm text-gray-500">
-                <span className="mr-4">Cycle Used: Calculated...</span>
-            </div>
         </div>
     );
 };
 
-export default LogGrid;
+export default PaperLogGrid;
