@@ -18,7 +18,7 @@ A comprehensive logistics application for commercial drivers that automates rout
 - **Backend**: Python 3.11, Django 4.2, Django REST Framework.
 - **Database**: SQLite (Local), PostgreSQL (Production ready).
 - **Routing API**: OpenRouteService (Free tier).
-- **Hosting**: Vercel (Monorepo support for both Frontend & Backend).
+- **Hosting**: Vercel, render.
 
 ## Prerequisites
 
